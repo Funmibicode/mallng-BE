@@ -68,11 +68,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(helmet());
 app.use(mongoSanitize());
-app.use(limiter);
+//app.use(limiter);
 
 
 // ── REST API Routes ──
-app.use("/api/payments/initialize", paymentLimiter);
+//app.use("/api/payments/initialize", paymentLimiter);
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/categories', categoryRoutes);
