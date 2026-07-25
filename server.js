@@ -60,12 +60,12 @@ const paymentLimiter = rateLimit({
 
 
 // ── Middleware ──
-app.use(helmet());
-app.use(mongoSanitize());
-app.use(limiter);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(helmet());
+app.use(mongoSanitize());
+app.use(limiter);
 
 
 // ── REST API Routes ──
