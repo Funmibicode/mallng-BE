@@ -56,6 +56,8 @@ const paymentLimiter = rateLimit({
   message: {
     msg: "Too many payment attempts, please try again later",
   },
+  legacyHeaders: false,
+  standardHeaders: true,
 });
 
 
