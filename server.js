@@ -44,10 +44,11 @@ const io = new Server(httpServer, {
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
-  message: {
-    msg: "Too many requests from this IP, please try again after 15 minutes",
-  },
+  message: { msg: "Too many requests, please try again after 15 minutes" },
+  legacyHeaders: false,
+  standardHeaders: true,
 });
+
 
 const paymentLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
