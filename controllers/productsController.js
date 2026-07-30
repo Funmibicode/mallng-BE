@@ -15,6 +15,16 @@ const getProducts = async (req, res, next) => {
 };
 
 
+// @desc Get vendor products
+const getVendorProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ user: req.user._id });
+    res.status(200).json(products);
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 
 // @desc Create product with images
@@ -115,4 +125,4 @@ const updateProducts = async (req, res, next) => {
 
 
 
-export { getProducts, postProducts, deleteProducts, updateProducts };
+export { getProducts, getVendorProducts, postProducts, deleteProducts, updateProducts };
