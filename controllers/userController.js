@@ -18,6 +18,7 @@ const registerUser = async (req, res) => {
       name,
       email: email.toLowerCase(),
       password: hashed,
+      role,
     });
 
     if (user) {
