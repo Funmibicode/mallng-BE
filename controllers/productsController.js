@@ -140,4 +140,4 @@ const updateProducts = async (req, res, next) => {
 
 
 
-export { getProducts, getVendorProducts, postProducts, deleteProducts, updateProducts };
+export { getProducts, getProductById, getVendorProducts, postProducts, deleteProducts, updateProducts };
