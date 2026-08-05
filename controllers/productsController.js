@@ -15,6 +15,21 @@ const getProducts = async (req, res, next) => {
 };
 
 
+// @desc Get products by id
+const getProductById = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id).populate("category", "name");
+    if (!product) {
+      res.status(404);
+      throw new Error("Product not found");
+    }
+    res.status(200).json(product);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // @desc Get vendor products
 const getVendorProducts = async (req, res, next) => {
   try {
