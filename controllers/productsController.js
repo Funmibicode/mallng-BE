@@ -45,43 +45,47 @@ const getVendorProducts = async (req, res, next) => {
 // @desc Create product with images
 const postProducts = async (req, res, next) => {
   try {
-    const { name, category, desc, price } = req.body;
+    const { name, category, desc, price, imageUrls } = req.body; // 1. get imageUrls from body
 
     if (!name || !category || !desc || !price) {
       res.status(400);
       throw new Error("Please fill in all fields");
     }
 
-  /*  if (!req.files || req.files.length === 0) {
+    // 2. Handle uploaded files
+    const uploadedImageUrls = req.files && req.files.length > 0 
+      ? req.files.map((file) => file.path) 
+      : [];
+    const cloudinaryIds = req.files && req.files.length > 0 
+      ? req.files.map((file) => file.filename) 
+      : [];
+
+    // 3. Handle pasted URLs
+    const parsedImageUrls = imageUrls ? JSON.parse(imageUrls) : []; // turn string back to array
+
+    // 4. Merge both together
+    const allImageUrls = [...uploadedImageUrls, ...parsedImageUrls];
+
+    if (allImageUrls.length === 0) {
       res.status(400);
-      throw new Error("Please upload at least one image");
+      throw new Error("Please add at least one image");
     }
 
-    const imageUrls = req.files.map((file) => file.path);
-    const cloudinaryIds = req.files.map((file) => file.filename);*/
-    // Make images optional for testing
-const imageUrls = req.files && req.files.length > 0 
-  ? req.files.map((file) => file.path) 
-  : [];
-const cloudinaryIds = req.files && req.files.length > 0 
-  ? req.files.map((file) => file.filename) 
-  : [];
-
     // Auto-upgrade to vendor if user is posting a product
-  if (req.user.role === "customer") {
-      await User.findByIdAndUpdate(req.user._id, { role: "vendor" });
-  }
+    if (req.user.role === "customer") {
+        await User.findByIdAndUpdate(req.user._id, { role: "vendor" });
+    }
 
-  const product = await Product.create({
-    name,
-    category,
-    desc,
-    price,
-    images: imageUrls,
-    cloudinaryIds,
-    user: req.user._id,
-  });
-    
+    const product = await Product.create({
+      name,
+      category,
+      desc,
+      price,
+      images: allImageUrls, // use merged array
+      cloudinaryIds, // only files uploaded to cloudinary will have this
+      user: req.user._id,
+    });
+      
     res.status(201).json({ msg: "Product added successfully", product });
   } catch (error) {
     next(error);
