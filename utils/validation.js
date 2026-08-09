@@ -15,13 +15,15 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
+
+
 const productSchema = Joi.object({
   name: Joi.string().min(2).required(),
-  category: Joi.string().required(),
+  category: Joi.string().required(), 
   desc: Joi.string().required(),
   price: Joi.number().positive().required(),
+  imageUrls: Joi.string().allow("").optional(),
 });
-
 
 
 // Middleware factory — takes a schema, returns middleware

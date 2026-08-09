@@ -45,25 +45,30 @@ const getVendorProducts = async (req, res, next) => {
 // @desc Create product with images
 const postProducts = async (req, res, next) => {
   try {
-    const { name, category, desc, price, imageUrls } = req.body; // 1. get imageUrls from body
+    const { name, category, desc, price, imageUrls } = req.body;
 
     if (!name || !category || !desc || !price) {
       res.status(400);
       throw new Error("Please fill in all fields");
     }
 
-    // 2. Handle uploaded files
-    const uploadedImageUrls = req.files && req.files.length > 0 
+    const uploadedImageUrls = req.files?.length > 0 
       ? req.files.map((file) => file.path) 
       : [];
-    const cloudinaryIds = req.files && req.files.length > 0 
+    const cloudinaryIds = req.files?.length > 0 
       ? req.files.map((file) => file.filename) 
       : [];
 
-    // 3. Handle pasted URLs
-    const parsedImageUrls = imageUrls ? JSON.parse(imageUrls) : []; // turn string back to array
+    // SAFE PARSE
+    let parsedImageUrls = [];
+    if (imageUrls && imageUrls !== "") {
+      try {
+        parsedImageUrls = JSON.parse(imageUrls);
+      } catch {
+        parsedImageUrls = [];
+      }
+    }
 
-    // 4. Merge both together
     const allImageUrls = [...uploadedImageUrls, ...parsedImageUrls];
 
     if (allImageUrls.length === 0) {
@@ -71,7 +76,6 @@ const postProducts = async (req, res, next) => {
       throw new Error("Please add at least one image");
     }
 
-    // Auto-upgrade to vendor if user is posting a product
     if (req.user.role === "customer") {
         await User.findByIdAndUpdate(req.user._id, { role: "vendor" });
     }
@@ -80,9 +84,9 @@ const postProducts = async (req, res, next) => {
       name,
       category,
       desc,
-      price,
-      images: allImageUrls, // use merged array
-      cloudinaryIds, // only files uploaded to cloudinary will have this
+      price: Number(price),
+      images: allImageUrls,
+      cloudinaryIds,
       user: req.user._id,
     });
       

@@ -16,6 +16,7 @@ const router = express.Router();
 
 router.route("/").get(getProducts);
 router.route("/create").post(protect, upload.array("images", 5), validate(productSchema), postProducts);
+
 router.route("/my-products").get(protect, getVendorProducts);
 
 
