@@ -3,6 +3,44 @@ import Messages from "../models/MessageModel.js";
 
 
 
+// @desc send messages 
+const sendMessage = async (req, res, next) => {
+  try {
+    const { roomId } = req.params;
+    const { content, type = "text" } = req.body;
+    const senderId = req.user._id;
+
+    const room = await ChatRoom.findById(roomId);
+    if (!room) return res.status(404).json({ msg: "Room not found" });
+
+    const isParticipant = 
+      room.buyer.toString() === senderId.toString() || 
+      room.vendor.toString() === senderId.toString();
+    if (!isParticipant) return res.status(403).json({ msg: "Not authorized" });
+
+    const message = await Message.create({
+      room: roomId,
+      sender: senderId,
+      content,
+      type
+    });
+
+    const populatedMessage = await message.populate("sender", "name");
+
+    await ChatRoom.findByIdAndUpdate(roomId, { 
+      latestMessage: message._id,
+      updatedAt: Date.now()
+    });
+
+    res.status(201).json(populatedMessage);
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+
 // @desc Find or create a chat room
 const findOrCreateRoom = async (req, res, next) => {
   try {
@@ -66,4 +104,4 @@ const getMessages = async (req, res, next) => {
 
 
 
-export { findOrCreateRoom, getRooms, getMessages };
+export {sendMessage, findOrCreateRoom, getRooms, getMessages };

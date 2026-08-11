@@ -3,6 +3,69 @@ import Payment from "../models/PaymentModel.js";
 
 
 
+// @desc Create order from cart
+const createOrder = async (req, res, next) => {
+  try {
+    const { items, shippingAddress } = req.body;
+    const buyerId = req.user._id;
+
+    if (!items || items.length === 0) {
+      res.status(400);
+      throw new Error("No order items");
+    }
+
+    // Group items by vendor
+    const ordersByVendor = {};
+    for (const item of items) {
+      const vendorId = item.vendor;
+      if (!vendorId) {
+        res.status(400);
+        throw new Error(`Vendor missing for product: ${item.name}`);
+      }
+      
+      if (!ordersByVendor[vendorId]) {
+        ordersByVendor[vendorId] = [];
+      }
+      
+      ordersByVendor[vendorId].push({
+        product: item._id,
+        quantity: item.qty || item.quantity,
+        price: item.price
+      });
+    }
+
+    const createdOrders = [];
+    
+    // Create 1 order per vendor
+    for (const vendorId in ordersByVendor) {
+      const vendorItems = ordersByVendor[vendorId];
+      const totalAmount = vendorItems.reduce(
+        (acc, item) => acc + item.price * item.quantity, 
+        0
+      );
+
+      const order = await Order.create({
+        user: buyerId,
+        vendor: vendorId,
+        items: vendorItems,
+        totalAmount,
+        status: "pending"
+      });
+
+      createdOrders.push(order);
+    }
+
+    res.status(201).json({ 
+      msg: "Orders created successfully", 
+      orders: createdOrders 
+    });
+    
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 // @desc Get buyer's own orders
 const getMyOrders = async (req, res, next) => {
   try {
@@ -128,6 +191,7 @@ const confirmDelivery = async (req, res, next) => {
 
 
 export {
+  createOrder,
   getMyOrders,
   getVendorOrders,
   getOrderById,
